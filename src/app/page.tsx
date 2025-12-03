@@ -32,6 +32,10 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortOption, setSortOption] = useState<string>('');
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const productsPerPage = 8; // Number of products to display per page
+
   // Fetch initial data for products and categories
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -96,8 +100,30 @@ export default function Home() {
         break;
     }
 
+    // Reset to first page whenever filters or sorts change
+    setCurrentPage(1);
+
     return processedProducts;
   }, [products, selectedCategory, searchTerm, sortOption]);
+
+  // Calculate current products to display based on pagination
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredAndSortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / productsPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  // If filters or sorts change, ensure we are on a valid page
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (currentPage === 0 && totalPages > 0) {
+        setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
+
 
   if (loading) {
     return <div className="container mx-auto p-4 flex justify-center items-center h-64">Loading products...</div>;
@@ -120,7 +146,36 @@ export default function Home() {
         setSortOption={setSortOption}
       />
       
-      <ProductList products={filteredAndSortedProducts} />
+      <ProductList products={currentProducts} />
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center mt-6 space-x-2">
+        <button
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-4 py-2 border rounded-lg shadow-sm bg-white hover:bg-gray-100 disabled:opacity-50"
+        >
+          Previous
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            onClick={() => paginate(i + 1)}
+            className={`px-4 py-2 border rounded-lg shadow-sm ${
+              currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100'
+            }`}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button
+          onClick={() => paginate(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 border rounded-lg shadow-sm bg-white hover:bg-gray-100 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
