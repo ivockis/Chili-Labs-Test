@@ -162,7 +162,7 @@ export default function Home() {
             key={i + 1}
             onClick={() => paginate(i + 1)}
             className={`px-4 py-2 border rounded-lg shadow-sm ${
-              currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100'
+              currentPage === i + 1 ? 'bg-red-400 text-white' : 'bg-white hover:bg-gray-100'
             }`}
           >
             {i + 1}
